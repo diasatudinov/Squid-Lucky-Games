@@ -10,22 +10,9 @@
 		2B0704422D9177DF005743FB /* Squid Lucky Games.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Squid Lucky Games.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		2B0704542D917800005743FB /* Exceptions for "Squid Lucky Games" folder in "Squid Lucky Games" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Squid-Lucky-Games-Info.plist",
-			);
-			target = 2B0704412D9177DF005743FB /* Squid Lucky Games */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2B0704442D9177DF005743FB /* Squid Lucky Games */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				2B0704542D917800005743FB /* Exceptions for "Squid Lucky Games" folder in "Squid Lucky Games" target */,
-			);
 			path = "Squid Lucky Games";
 			sourceTree = "<group>";
 		};
