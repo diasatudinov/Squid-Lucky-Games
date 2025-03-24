@@ -14,8 +14,8 @@ struct MenuViewSL: View {
     @State private var showSettings = false
     
 //    @StateObject var shopVM = ShopViewModelIE()
-//    @StateObject var settingsVM = SettingsViewModelIE()
-    
+    @StateObject var settingsVM = SettingsViewModelSL()
+    @StateObject var achievementVM = AchievementsViewModel()
     var body: some View {
         
         GeometryReader { geometry in
@@ -106,10 +106,10 @@ struct MenuViewSL: View {
 //                ShopViewIE(viewModel: shopVM)
             }
             .fullScreenCover(isPresented: $showAchivement) {
-//                ShopViewIE(viewModel: shopVM)
+                AchivementsViewSL(viewModel: achievementVM)
             }
             .fullScreenCover(isPresented: $showSettings) {
-//                SettingsView(settings: settingsVM)
+                SettingsViewSL(settings: settingsVM)
             }
             
         }
