@@ -1,7 +1,14 @@
+//
+//  SettingsViewModelIE.swift
+//  Squid Lucky Games
+//
+//  Created by Dias Atudinov on 24.03.2025.
+//
+
+
 import SwiftUI
 
-class SettingsViewModelIE: ObservableObject {
+class SettingsViewModelSL: ObservableObject {
     @AppStorage("soundEnabled") var soundEnabled: Bool = true
     @AppStorage("musicEnabled") var musicEnabled: Bool = true
-    @AppStorage("vibraEnabled") var vibraEnabled: Bool = true
 }
