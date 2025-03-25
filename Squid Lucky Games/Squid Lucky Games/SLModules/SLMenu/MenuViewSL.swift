@@ -13,7 +13,7 @@ struct MenuViewSL: View {
     @State private var showAchivement = false
     @State private var showSettings = false
     
-//    @StateObject var shopVM = ShopViewModelIE()
+    @StateObject var shopVM = ShopViewModelSL()
     @StateObject var settingsVM = SettingsViewModelSL()
     @StateObject var achievementVM = AchievementsViewModel()
     var body: some View {
@@ -103,7 +103,7 @@ struct MenuViewSL: View {
 //                ChooseLevelIE(shopVM: shopVM)
             }
             .fullScreenCover(isPresented: $showShop) {
-//                ShopViewIE(viewModel: shopVM)
+                ShopViewSL(viewModel: shopVM)
             }
             .fullScreenCover(isPresented: $showAchivement) {
                 AchivementsViewSL(viewModel: achievementVM)
