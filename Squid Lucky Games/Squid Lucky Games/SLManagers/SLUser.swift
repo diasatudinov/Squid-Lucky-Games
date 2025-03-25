@@ -4,42 +4,25 @@ class SLUser: ObservableObject {
     
     static let shared = SLUser()
     
-    @AppStorage("birds") var storedBirds: Int = 100
-    @Published var birds: Int = 100
+    @AppStorage("money") var storedMoney: Int = 3000
+    @Published var money: Int = 3000
     
-    @AppStorage("stars") var storedStars: Int = 5
-    @Published var stars: Int = 5
     init() {
-        birds = storedBirds
-        stars = storedStars
+        money = storedMoney
     }
     
     
     func updateUserBirds(for coins: Int) {
-        self.birds += coins
-        storedBirds = self.birds
+        self.money += coins
+        storedMoney = self.money
     }
     
-    func minusUserBirds(for birds: Int) {
-        self.birds -= birds
-        if self.birds < 0 {
-            self.birds = 0
+    func minusUserBirds(for money: Int) {
+        self.money -= money
+        if self.money < 0 {
+            self.money = 0
         }
-        storedBirds = self.birds
-        
-    }
-    
-    func updateUserStars(for stars: Int) {
-        self.stars += stars
-        storedStars = self.stars
-    }
-    
-    func minusUserStars(for stars: Int) {
-        self.stars -= stars
-        if self.stars < 0 {
-            self.stars = 0
-        }
-        storedStars = self.stars
+        storedMoney = self.money
         
     }
     
