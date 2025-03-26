@@ -11,7 +11,7 @@ import SwiftUI
 struct Squid_Lucky_GamesApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MenuViewSL()
         }
     }
 }

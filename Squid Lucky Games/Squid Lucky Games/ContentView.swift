@@ -15,35 +15,61 @@ enum PieceType {
     case attacker
 }
 
+enum AttackerSide: String {
+    case squareFigureSL, triangleFigureSL, umbrellaFigureSL, CirecleFigureSL
+}
+
+enum Player: String {
+    case attacker = "Атакующие"
+    case defender = "Защитники"
+}
+
+struct Piece {
+    var type: PieceType
+    var attackerSide: AttackerSide? = nil
+}
+
 // Модель игрового состояния
 class GameViewModel: ObservableObject {
-    // Игровое поле 11x11, каждая клетка хранит тип фигуры
-    @Published var board: [[PieceType]] = Array(
-        repeating: Array(repeating: .none, count: 11),
+    @Published var board: [[Piece]] = Array(
+        repeating: Array(repeating: Piece(type: .none), count: 11),
         count: 11
     )
-    // Выбранная клетка (если игрок выбирает фигуру для хода)
     @Published var selectedCell: (row: Int, col: Int)? = nil
-    // Флаг окончания игры (можно расширять логику побед/поражений)
     @Published var gameOver: Bool = false
     @Published var gameResult: String = ""
+    @Published var currentPlayer: Player = .attacker
     
     init() {
         setupBoard()
     }
     
-    // Начальная расстановка фигур
+    func resetGame() {
+        gameOver = false
+        gameResult = ""
+        selectedCell = nil
+        currentPlayer = .attacker
+        setupBoard()
+    }
+    
+    func isCorner(row: Int, col: Int) -> Bool {
+        return (row == 0 && col == 0) ||
+        (row == 0 && col == 10) ||
+        (row == 10 && col == 0) ||
+        (row == 10 && col == 10)
+    }
+    
     func setupBoard() {
-        // Сброс поля
+        // Reset board
         board = Array(
-            repeating: Array(repeating: .none, count: 11),
+            repeating: Array(repeating: Piece(type: .none), count: 11),
             count: 11
         )
         let center = 5
-        // Размещаем короля в центре
-        board[center][center] = .king
+        // Place king at center.
+        board[center][center] = Piece(type: .king)
         
-        // Расстановка 12 защитников вокруг короля (вокруг центральной клетки)
+        // Setup defenders (they use the default defender appearance).
         let defenders: [(Int, Int)] = [
             (center - 1, center), (center + 1, center),
             (center, center - 1), (center, center + 1),
@@ -53,115 +79,164 @@ class GameViewModel: ObservableObject {
             (center, center - 2), (center, center + 2)
         ]
         for pos in defenders {
-            board[pos.0][pos.1] = .defender
+            if isCorner(row: pos.0, col: pos.1) { continue }
+            board[pos.0][pos.1] = Piece(type: .defender)
         }
         
-        // Расстановка 24 атакующих по краям. Здесь приведён один из вариантов начальной расстановки.
-        let attackers: [(Int, Int)] = [
-            // Верхняя сторона
+        // Setup attackers on the board edges.
+        // We assign an attackerSide based on the attacker's position.
+        let attackersPositions: [(Int, Int)] = [
+            // Top edge – facing down (south)
             (0, 3), (0, 4), (0, 5), (0, 6), (0, 7),
-            // Нижняя сторона
+            // Bottom edge – facing up (north)
             (10, 3), (10, 4), (10, 5), (10, 6), (10, 7),
-            // Левая сторона
+            // Left edge – facing right (east)
             (3, 0), (4, 0), (5, 0), (6, 0), (7, 0),
-            // Правая сторона
+            // Right edge – facing left (west)
             (3, 10), (4, 10), (5, 10), (6, 10), (7, 10),
-            // Дополнительные позиции
-            (1, 5), (5, 1), (9, 5), (5, 9)
+            // Additional positions:
+            (1, 5),  // near top -> south
+            (5, 1),  // near left -> east
+            (9, 5),  // near bottom -> north
+            (5, 9)   // near right -> west
         ]
-        for pos in attackers {
-            board[pos.0][pos.1] = .attacker
+        for pos in attackersPositions {
+            if isCorner(row: pos.0, col: pos.1) { continue }
+            let side: AttackerSide
+            if pos.0 == 0 || pos.0 == 1 {
+                side = .triangleFigureSL
+            } else if pos.0 == 10 || pos.0 == 9 {
+                side = .squareFigureSL
+            } else if pos.1 == 0 || pos.1 == 1 {
+                side = .CirecleFigureSL
+            } else if pos.1 == 10 || pos.1 == 9 {
+                side = .umbrellaFigureSL
+            } else {
+                side = .triangleFigureSL // default fallback
+            }
+            board[pos.0][pos.1] = Piece(type: .attacker, attackerSide: side)
         }
     }
     
-    // Перемещение фигуры с клетки "from" на клетку "to"
+    // ... [the rest of your game logic remains the same,
+    // but remember to work with Piece instead of PieceType]
+    
+    func isPieceBelongsToCurrentPlayer(_ piece: Piece) -> Bool {
+        switch currentPlayer {
+        case .attacker:
+            return piece.type == .attacker
+        case .defender:
+            return piece.type == .defender || piece.type == .king
+        }
+    }
+    
     func movePiece(from: (Int, Int), to: (Int, Int)) {
-        // Если ходу не соответствует логика (не по прямой), отменяем
+        // For brevity, the same validations are applied.
+        if board[to.0][to.1].type != .none { return }
+        if isCorner(row: to.0, col: to.1) {
+            if board[from.0][from.1].type != .king { return }
+        }
         if from.0 != to.0 && from.1 != to.1 { return }
-        // Проверка, что по пути нет других фигур
         if !isPathClear(from: from, to: to) { return }
         
         let movingPiece = board[from.0][from.1]
-        // Перемещаем фигуру
-        board[from.0][from.1] = .none
-        board[to.0][to.1] = movingPiece
+        if !isPieceBelongsToCurrentPlayer(movingPiece) { return }
         
-        // После хода проверяем захваты фигур
+        board[from.0][from.1] = Piece(type: .none)
+        board[to.0][to.1] = movingPiece
+
+        // If the king moved to a corner, handle victory.
+        if movingPiece.type == .king && isCorner(row: to.0, col: to.1) {
+            gameOver = true
+            gameResult = "Defenders win! The king has escaped."
+            return
+        }
+
+        // Check for captures around the destination.
         checkCaptures(around: to, movingPiece: movingPiece)
-        // Отдельно проверяем, не захвачен ли король
+        // Check if the king is captured.
         checkKingCapture()
+        // Switch turn if the game is not over.
+        if !gameOver {
+            switchTurn()
+        }
     }
     
-    // Проверка, что между from и to нет фигур
+    func switchTurn() {
+        currentPlayer = currentPlayer == .attacker ? .defender : .attacker
+    }
+    
     func isPathClear(from: (Int, Int), to: (Int, Int)) -> Bool {
         if from.0 == to.0 {
-            // Горизонтальное движение
             let range = from.1 < to.1 ? (from.1 + 1)..<to.1 : (to.1 + 1)..<from.1
             for col in range {
-                if board[from.0][col] != .none {
-                    return false
-                }
+                if board[from.0][col].type != .none { return false }
             }
         } else if from.1 == to.1 {
-            // Вертикальное движение
             let range = from.0 < to.0 ? (from.0 + 1)..<to.0 : (to.0 + 1)..<from.0
             for row in range {
-                if board[row][from.1] != .none {
-                    return false
-                }
+                if board[row][from.1].type != .none { return false }
             }
         }
         return true
     }
     
-    // Проверка захвата фигур вокруг клетки, куда переместилась фигура.
-    // Если фигура оказывается между двумя враждебными – удаляем её.
-    func checkCaptures(around pos: (Int, Int), movingPiece: PieceType) {
-        let directions = [(0,1), (1,0), (0,-1), (-1,0)]
+    // Capture logic for regular pieces
+    func checkCaptures(around pos: (Int, Int), movingPiece: Piece) {
+        // Four cardinal directions: right, down, left, up
+        let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
         for direction in directions {
             let enemyRow = pos.0 + direction.0
             let enemyCol = pos.1 + direction.1
             let allyRow = enemyRow + direction.0
             let allyCol = enemyCol + direction.1
+            
+            // Ensure both positions are within board limits.
             if isValid(row: enemyRow, col: enemyCol) && isValid(row: allyRow, col: allyCol) {
                 let enemyPiece = board[enemyRow][enemyCol]
-                // Если встречается фигура, отличная от пустой, короля и своей же, то проверяем захват
-                if enemyPiece != .none &&
-                   enemyPiece != movingPiece &&
-                   enemyPiece != .king {
-                    // Если за вражеской фигурой находится союзник или король – захватываем
-                    if board[allyRow][allyCol] == movingPiece || board[allyRow][allyCol] == .king {
-                        board[enemyRow][enemyCol] = .none
+                // Check if the enemy piece exists, is not none, is not the king,
+                // and does not belong to the same side as the moving piece.
+                if enemyPiece.type != .none &&
+                    enemyPiece.type != movingPiece.type &&
+                    enemyPiece.type != .king {
+                    let allyPiece = board[allyRow][allyCol]
+                    // If the cell beyond the enemy piece is either occupied by a friendly piece,
+                    // is the king, or is a corner cell (which counts as a barrier), remove the enemy.
+                    if allyPiece.type == movingPiece.type || allyPiece.type == .king || isCorner(row: allyRow, col: allyCol) {
+                        board[enemyRow][enemyCol] = Piece(type: .none)
                     }
                 }
             }
         }
     }
     
-    // Проверка захвата короля: он считается захваченным, если со всех сторон (или с трёх, если у края) клеток находятся атакующие или край поля
+    // Capture logic for the king piece
     func checkKingCapture() {
+        // Find the king's position on the board.
         for row in 0..<11 {
             for col in 0..<11 {
-                if board[row][col] == .king {
-                    let directions = [(0,1), (1,0), (0,-1), (-1,0)]
+                if board[row][col].type == .king {
+                    let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
                     var surroundCount = 0
                     for direction in directions {
                         let adjRow = row + direction.0
                         let adjCol = col + direction.1
+                        // If the adjacent cell is off the board, count it as a barrier.
                         if !isValid(row: adjRow, col: adjCol) {
-                            // Если клетка за пределами доски – считаем как "окружена"
                             surroundCount += 1
-                        } else if board[adjRow][adjCol] == .attacker {
+                        }
+                        // Otherwise, if the adjacent cell is occupied by an attacker or is a corner cell, count it.
+                        else if board[adjRow][adjCol].type == .attacker || isCorner(row: adjRow, col: adjCol) {
                             surroundCount += 1
                         }
                     }
-                    // Если король находится у края, требуется окружение с трёх сторон, иначе – со всех четырёх
+                    // Determine how many sides need to be blocked.
                     let required = isOnEdge(row: row, col: col) ? 3 : 4
                     if surroundCount >= required {
                         gameOver = true
-                        gameResult = "Атакующие победили! Король захвачен."
+                        gameResult = "Attackers win! King captured."
                     }
-                    return
+                    return // Once the king is found and evaluated, exit.
                 }
             }
         }
@@ -178,24 +253,46 @@ class GameViewModel: ObservableObject {
 
 // Представление отдельной клетки
 struct CellView: View {
-    var piece: PieceType
+    var row: Int
+    var col: Int
+    var piece: Piece
     var isSelected: Bool = false
+    var isCorner: Bool {
+        return (row == 0 && col == 0) ||
+        (row == 0 && col == 10) ||
+        (row == 10 && col == 0) ||
+        (row == 10 && col == 10)
+    }
     var body: some View {
         ZStack {
             Rectangle()
-                .fill(isSelected ? Color.green.opacity(0.3) : Color.white)
+                .fill(isCorner ? Color.purple.opacity(0.5) : (isSelected ? Color.green.opacity(0.3) : Color.clear))
                 .frame(width: 30, height: 30)
-                .border(Color.black)
-            if piece != .none {
+                .border(Color.appPurple, width: 2)
+            
+            // For attackers, show the proper image; for others, fallback to a circle.
+            if piece.type == .attacker, let side = piece.attackerSide {
+                Image("\(side.rawValue)")
+                    .resizable()
+                    .frame(width: 20, height: 20)
+            } else if piece.type == .defender {
+                Image(.attackerFigureSL)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+            } else if piece.type == .king {
+                Image(.kingFigureSL)
+                    .resizable()
+                    .frame(width: 20, height: 20)
+            } else if piece.type != .none {
                 Circle()
-                    .fill(colorForPiece(piece))
+                    .fill(colorForPiece(piece.type))
                     .frame(width: 20, height: 20)
             }
         }
     }
     
-    func colorForPiece(_ piece: PieceType) -> Color {
-        switch piece {
+    func colorForPiece(_ type: PieceType) -> Color {
+        switch type {
         case .king:
             return .yellow
         case .defender:
@@ -211,65 +308,85 @@ struct CellView: View {
 // Главное представление игры
 struct ContentView: View {
     @StateObject var viewModel = GameViewModel()
-    
-    var body: some View {
-        VStack {
-            Text("Игра: Хнефатафл")
-                .font(.title)
-                .padding()
-            VStack(spacing: 0){
-                // Игровое поле 11x11
-                ForEach(0..<11, id: \.self) { row in
-                    HStack(spacing: 0) {
-                        ForEach(0..<11, id: \.self) { col in
-                            CellView(
-                                piece: viewModel.board[row][col],
-                                isSelected: viewModel.selectedCell?.row == row && viewModel.selectedCell?.col == col
-                            )
-                            .onTapGesture {
-                                cellTapped(row: row, col: col)
-                            }
-                        }
-                    }
-                }
+       
+       var body: some View {
+           VStack(spacing: 10) {
+               Text("Hnefatafl Game")
+                   .font(.title)
+                   .padding(.top)
                
-            }//.frame(width: 330, height: 330)
-            // Кнопка "Сдаться"
-            Button("Сдаться") {
-                viewModel.gameOver = true
-                viewModel.gameResult = "Игрок сдался. Атакующие победили."
-            }
-            .padding()
-            .font(.headline)
-            
-            // Сообщение об окончании игры
-            if viewModel.gameOver {
-                Text(viewModel.gameResult)
-                    .font(.title2)
-                    .padding()
-            }
-        }
-    }
-    
-    // Обработка нажатия на клетку:
-    // Если не выбрана фигура – выбираем её (если там не пусто).
-    // Если уже выбрана – пытаемся переместить на нажатую клетку.
-    func cellTapped(row: Int, col: Int) {
-        if viewModel.gameOver { return }
-        
-        if let selected = viewModel.selectedCell {
-            // Если нажата другая клетка, пробуем сделать ход
-            viewModel.movePiece(from: selected, to: (row, col))
-            viewModel.selectedCell = nil
-        } else {
-            // Если клетка не пуста – выбираем фигуру
-            if viewModel.board[row][col] != .none {
-                viewModel.selectedCell = (row, col)
-            }
-        }
-    }
-}
-
+               Text("Turn: \(viewModel.currentPlayer.rawValue)")
+                   .font(.headline)
+               
+               ZStack {
+                   Color.black
+                   GeometryReader { geometry in
+                       Path { path in
+                           path.move(to: .zero)
+                           path.addLine(to: CGPoint(x: geometry.size.width, y: geometry.size.height))
+                           path.move(to: CGPoint(x: geometry.size.width, y: 0))
+                           path.addLine(to: CGPoint(x: 0, y: geometry.size.height))
+                       }
+                       .stroke(Color.appPurple, lineWidth: 3)
+                   }.frame(width: 270, height: 270)
+                   
+                   VStack(spacing: 0) {
+                       ForEach(0..<11, id: \.self) { row in
+                           HStack(spacing: 0) {
+                               ForEach(0..<11, id: \.self) { col in
+                                   CellView(
+                                       row: row,
+                                       col: col,
+                                       piece: viewModel.board[row][col],
+                                       isSelected: viewModel.selectedCell?.row == row && viewModel.selectedCell?.col == col
+                                   )
+                                   .onTapGesture {
+                                       cellTapped(row: row, col: col)
+                                   }
+                               }
+                           }
+                       }
+                   }
+                 
+               }.frame(width: 330, height: 330)
+               
+               HStack {
+                   Button("Surrender") {
+                       viewModel.gameOver = true
+                       viewModel.gameResult = "Surrendered. \(viewModel.currentPlayer == .attacker ? "Defenders" : "Attackers") win."
+                   }
+                   .padding()
+                   .font(.headline)
+                   
+                   Button("Restart") {
+                       viewModel.resetGame()
+                   }
+                   .padding()
+                   .font(.headline)
+               }
+               
+               if viewModel.gameOver {
+                   Text(viewModel.gameResult)
+                       .font(.title2)
+                       .padding()
+               }
+           }
+       }
+       
+       func cellTapped(row: Int, col: Int) {
+           if viewModel.gameOver { return }
+           
+           if let selected = viewModel.selectedCell {
+               viewModel.movePiece(from: selected, to: (row, col))
+               viewModel.selectedCell = nil
+           } else {
+               if viewModel.board[row][col].type != .none &&
+                   viewModel.isPieceBelongsToCurrentPlayer(viewModel.board[row][col]) {
+                   viewModel.selectedCell = (row, col)
+               }
+           }
+       }
+   }
 #Preview {
     ContentView()
 }
