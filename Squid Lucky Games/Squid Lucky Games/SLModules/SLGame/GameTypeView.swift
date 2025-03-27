@@ -9,11 +9,13 @@ import SwiftUI
 
 struct GameTypeView: View {
     @Environment(\.presentationMode) var presentationMode
+    @ObservedObject var shopVM: ShopViewModelSL
     
+    @State private var showAIView = false
+    @State private var show2PlayerView = false
+    @State private var showOnlineView = false
     var body: some View {
         ZStack {
-            
-            
             
             VStack(spacing: 0) {
                 HStack {
@@ -29,7 +31,7 @@ struct GameTypeView: View {
                     Spacer()
                 }
                 
-                HStack(spacing: 20) {
+                HStack(spacing: SLDeviceInfo.shared.deviceType == .pad ? 40:20) {
                     Image(.guardIcon)
                         .resizable()
                         .scaledToFit()
@@ -37,7 +39,7 @@ struct GameTypeView: View {
                     
                     VStack {
                         Button {
-                            
+                            showAIView = true
                         } label: {
                             Image(.aiIconSL)
                                 .resizable()
@@ -45,7 +47,7 @@ struct GameTypeView: View {
                         }
                         
                         Button {
-                            
+                            show2PlayerView = true
                         } label: {
                             Image(.forTwoIconSL)
                                 .resizable()
@@ -53,7 +55,7 @@ struct GameTypeView: View {
                         }
                         
                         Button {
-                            
+                            showOnlineView = true
                         } label: {
                             Image(.onlineIconSL)
                                 .resizable()
@@ -77,9 +79,18 @@ struct GameTypeView: View {
             }
             
         )
+        .fullScreenCover(isPresented: $showAIView) {
+            AgainstPlayersView(shopVM: shopVM)
+        }
+        .fullScreenCover(isPresented: $show2PlayerView) {
+            TwoPlayersView(shopVM: shopVM)
+        }
+        .fullScreenCover(isPresented: $showOnlineView) {
+            AgainstPlayersView(shopVM: shopVM)
+        }
     }
 }
 
 #Preview {
-    GameTypeView()
+    GameTypeView(shopVM: ShopViewModelSL())
 }

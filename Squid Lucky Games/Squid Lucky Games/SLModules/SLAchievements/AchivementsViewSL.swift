@@ -1,10 +1,3 @@
-//
-//  AchivementsViewSL.swift
-//  Squid Lucky Games
-//
-//  Created by Dias Atudinov on 24.03.2025.
-//
-
 import SwiftUI
 
 struct AchivementsViewSL: View {
@@ -23,7 +16,7 @@ struct AchivementsViewSL: View {
                             Image(.achievementsLogoSL)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 150)
+                                .frame(height: SLDeviceInfo.shared.deviceType == .pad ? 300:150)
                             
                             Spacer()
                             
@@ -68,7 +61,8 @@ struct AchivementsViewSL: View {
 struct AchivementsScrollViewSL: View {
     @State private var scrollOffset: CGFloat = 0
     
-    var totalContentHeight: CGFloat = 250
+    var totalContentHeight: CGFloat { SLDeviceInfo.shared.deviceType == .pad ? 500:250
+    }
     
     let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 5)
     
@@ -89,7 +83,7 @@ struct AchivementsScrollViewSL: View {
                         .frame(height: 0)
                         
                         // The grid itself.
-                        LazyVGrid(columns: columns, spacing: 20) {
+                        LazyVGrid(columns: columns, spacing: SLDeviceInfo.shared.deviceType == .pad ? 40:20) {
                             ForEach(1...20, id: \.self) { index in
                                 achivementCell(
                                     achievement: index,
@@ -125,7 +119,7 @@ struct AchivementsScrollViewSL: View {
         Image("achivement\(achievement)")
             .resizable()
             .scaledToFit()
-            .frame(width: 85, height: 85)
+            .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 170:85, height: SLDeviceInfo.shared.deviceType == .pad ? 170:85)
             .opacity(isAchived ? 0.5 : 1)
     }
     
@@ -159,40 +153,12 @@ struct CustomScrollIndicator: View {
             Image(.indicatorSL)
                 .resizable()
                 .scaledToFit()
-                .frame(width: 46, height: 36)
+                .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 92:46, height: SLDeviceInfo.shared.deviceType == .pad ? 72:36)
                 .offset(y: indicatorOffset)
         }
     }
 }
 
-// Custom scroll indicator view.
-//struct CustomScrollIndicator: View {
-//    let scrollOffset: CGFloat
-//    let totalContentHeight: CGFloat
-//    let visibleHeight: CGFloat
-//
-//    var body: some View {
-//        // Calculate indicator's height based on visible content vs total content.
-//        let indicatorHeight = max((visibleHeight / totalContentHeight) * visibleHeight, 30)
-//        let maxIndicatorOffset = visibleHeight - indicatorHeight
-//        // Compute scroll progress (clamped between 0 and 1).
-//        let progress = min(max(-scrollOffset / (totalContentHeight - visibleHeight), 0), 1)
-//        let indicatorOffset = progress * maxIndicatorOffset
-//
-//        return ZStack {
-//            Image(.indicatorBgSL)
-//                .resizable()
-//                .scaledToFit()
-//
-//            Image(.indicatorSL)
-//                .resizable()
-//                .scaledToFit()
-//                .frame(width: 46, height: 36)
-//                .offset(y: indicatorOffset)
-//        }
-//
-//    }
-//}
 
 
 
