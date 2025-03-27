@@ -12,7 +12,7 @@ struct ShopViewSL: View {
     @StateObject var user = SLUser.shared
     @ObservedObject var viewModel: ShopViewModelSL
 
-    let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
+    let columns = Array(repeating: GridItem(.flexible(), spacing: SLDeviceInfo.shared.deviceType == .pad ? 20:10), count: 3)
     
     var body: some View {
         ZStack {
@@ -33,8 +33,8 @@ struct ShopViewSL: View {
                     MoneyViewSL()
                     
                 }
-                
-                LazyVGrid(columns: columns, spacing: 20) {
+                Spacer()
+                LazyVGrid(columns: columns, spacing: SLDeviceInfo.shared.deviceType == .pad ? 40:20) {
                     ForEach(viewModel.shopTeamItems, id: \.self) { item in
                         Button {
                             if viewModel.boughtItems.contains(where: {$0.name == item.name}) {
@@ -97,7 +97,7 @@ struct ShopViewSL: View {
                     }
                 }
                 .padding()
-                
+                Spacer()
             }.padding()
             
         }.background(

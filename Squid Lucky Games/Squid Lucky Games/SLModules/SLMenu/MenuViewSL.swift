@@ -100,7 +100,7 @@ struct MenuViewSL: View {
 //                }
 //            }
             .fullScreenCover(isPresented: $showGame) {
-                GameTypeView()
+                GameTypeView(shopVM: shopVM)
             }
             .fullScreenCover(isPresented: $showShop) {
                 ShopViewSL(viewModel: shopVM)

@@ -3,14 +3,13 @@ import SwiftUI
 class ShopViewModelSL: ObservableObject {
     @Published var shopTeamItems: [Item] = [
         
-        Item(name: "Item 1", image: "birdYellow", icon: "itemIcon1"),
-        Item(name: "Item 2", image: "birdYellow", icon: "itemIcon2"),
-        Item(name: "Item 3", image: "birdYellow", icon: "itemIcon3"),
-        Item(name: "Item 4", image: "birdYellow", icon: "itemIcon4"),
-        Item(name: "Item 5", image: "birdYellow", icon: "itemIcon5"),
-        Item(name: "Item 6", image: "birdYellow", icon: "itemIcon6"),
+        Item(name: "Item 1", image: "loadingViewBgSL", icon: "itemIcon1"),
+        Item(name: "Item 2", image: "itemImage2", icon: "itemIcon2"),
+        Item(name: "Item 3", image: "gameTypeBgSL", icon: "itemIcon3"),
+        Item(name: "Item 4", image: "settingsViewBgSL", icon: "itemIcon4"),
+        Item(name: "Item 5", image: "ItemImage5", icon: "itemIcon5"),
+        Item(name: "Item 6", image: "ItemImage6", icon: "itemIcon6"),
     ]
-    
     
     @Published var boughtItems: [Item] = [
         Item(name: "Item 1", image: "birdYellow", icon: "itemIcon1"),
@@ -31,7 +30,7 @@ class ShopViewModelSL: ObservableObject {
         loadBoughtItem()
     }
     
-    private let userDefaultsTeamKey = "saveCurrentItem"
+    private let userDefaultsTeamKey = "saveCurrentItemImage"
     private let userDefaultsBoughtKey = "boughtItem"
 
     

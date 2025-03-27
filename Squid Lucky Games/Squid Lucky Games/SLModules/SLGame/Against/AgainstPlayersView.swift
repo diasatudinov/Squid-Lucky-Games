@@ -10,123 +10,126 @@ import SwiftUI
 
 struct AgainstPlayersView: View {
     @Environment(\.presentationMode) var presentationMode
-
+    
     @StateObject var viewModel = AgainstPlayersGameViewModel()
     @ObservedObject var shopVM: ShopViewModelSL
     var body: some View {
         ZStack {
             VStack {
                 Spacer()
-            HStack(spacing: 50) {
-                VStack {
-                    Image(.defendersIconSL)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120)
-                    Image(viewModel.currentPlayer == .defender ? .yourTurnText: .waitText)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 20)
-                    
-                    Spacer()
-                    
-                    HStack {
-                        Image(.timerIconSL)
+                HStack(spacing: SLDeviceInfo.shared.deviceType == .pad ? 25:50) {
+                    VStack {
+                        Image(.defendersIconSL)
                             .resizable()
                             .scaledToFit()
-                            .frame(height: 80)
+                            .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 240:120)
+                        Image(viewModel.currentPlayer == .defender ? .yourTurnText: .waitText)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 240:120, height: SLDeviceInfo.shared.deviceType == .pad ? 40:20)
                         
-                        ZStack {
-                            Image(.timerBgSL)
+                        Spacer()
+                        
+                        HStack {
+                            Image(.timerIconSL)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(height: 80)
+                                .frame(height: SLDeviceInfo.shared.deviceType == .pad ? 120:80)
+                            
+                            ZStack {
+                                Image(.timerBgSL)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: SLDeviceInfo.shared.deviceType == .pad ? 160:80)
+                                Text("00:\(viewModel.timeRemaining)")
+                                    .font(.system(size: SLDeviceInfo.shared.deviceType == .pad ? 40:30, weight: .bold))
+                                    .foregroundColor(.appPurple)
+                            }
                         }
+                        
                     }
                     
-                }
-                
-                ZStack {
-                    Color.black
-                    GeometryReader { geometry in
-                        Path { path in
-                            path.move(to: .zero)
-                            path.addLine(to: CGPoint(x: geometry.size.width, y: geometry.size.height))
-                            path.move(to: CGPoint(x: geometry.size.width, y: 0))
-                            path.addLine(to: CGPoint(x: 0, y: geometry.size.height))
-                        }
-                        .stroke(Color.appPurple, lineWidth: 3)
-                    }.frame(width: 270, height: 270)
-                    
-                    VStack(spacing: 0) {
-                        ForEach(0..<11, id: \.self) { row in
-                            HStack(spacing: 0) {
-                                ForEach(0..<11, id: \.self) { col in
-                                    CellView(
-                                        row: row,
-                                        col: col,
-                                        piece: viewModel.board[row][col],
-                                        isSelected: viewModel.selectedCell?.row == row && viewModel.selectedCell?.col == col
-                                    )
-                                    .onTapGesture {
-                                        cellTapped(row: row, col: col)
+                    ZStack {
+                        Color.black
+                        GeometryReader { geometry in
+                            Path { path in
+                                path.move(to: .zero)
+                                path.addLine(to: CGPoint(x: geometry.size.width, y: geometry.size.height))
+                                path.move(to: CGPoint(x: geometry.size.width, y: 0))
+                                path.addLine(to: CGPoint(x: 0, y: geometry.size.height))
+                            }
+                            .stroke(Color.appPurple, lineWidth: SLDeviceInfo.shared.deviceType == .pad ? 6:3)
+                        }.frame(width: SLDeviceInfo.shared.deviceType == .pad ? 540:270, height: SLDeviceInfo.shared.deviceType == .pad ? 540:270)
+                        
+                        VStack(spacing: 0) {
+                            ForEach(0..<11, id: \.self) { row in
+                                HStack(spacing: 0) {
+                                    ForEach(0..<11, id: \.self) { col in
+                                        CellView(
+                                            row: row,
+                                            col: col,
+                                            piece: viewModel.board[row][col],
+                                            isSelected: viewModel.selectedCell?.row == row && viewModel.selectedCell?.col == col
+                                        )
+                                        .onTapGesture {
+                                            cellTapped(row: row, col: col)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    
-                }.frame(width: 330, height: 330)
-                    .overlay {
-                        Rectangle()
-                        .stroke(Color.appPurple, lineWidth: 12)
-                    }
-                
-                VStack {
-                    Image(.attackersIconSL)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                    Image(viewModel.currentPlayer == .attacker ? .yourTurnText: .waitText)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 20)
-                    Spacer()
-                    Button{
-                        viewModel.gameOver = true
-                        viewModel.gameResult = "Surrendered. \(viewModel.currentPlayer == .attacker ? "Defenders" : "Attackers") win."
-                    } label: {
-                       
-                        Image(.surrenderIconSL)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 100)
-                    }
-                    
-                    
-                    Button {
-                        //viewModel.resetGame()
-                        presentationMode.wrappedValue.dismiss()
-                    } label: {
                         
-                        Image(.restartGameIconSL)
+                    }.frame(width: SLDeviceInfo.shared.deviceType == .pad ? 660:330, height: SLDeviceInfo.shared.deviceType == .pad ? 660:330)
+                        .overlay {
+                            Rectangle()
+                                .stroke(Color.appPurple, lineWidth: SLDeviceInfo.shared.deviceType == .pad ? 24:12)
+                        }
+                    
+                    VStack {
+                        Image(.attackersIconSL)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 100)
+                            .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 240:120, height: SLDeviceInfo.shared.deviceType == .pad ? 240:120)
+                        Image(viewModel.currentPlayer == .attacker ? .yourTurnText: .waitText)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 240:120, height: SLDeviceInfo.shared.deviceType == .pad ? 40:20)
+                        Spacer()
+                        Button{
+                            viewModel.gameOver = true
+                            viewModel.gameResult = "Surrendered. \(viewModel.currentPlayer == .attacker ? "Defenders" : "Attackers") win."
+                        } label: {
+                            
+                            Image(.surrenderIconSL)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 200:100)
+                        }
+                        
+                        
+                        Button {
+                            //viewModel.resetGame()
+                            presentationMode.wrappedValue.dismiss()
+                        } label: {
+                            
+                            Image(.restartGameIconSL)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 200:100)
+                        }
+                        
                     }
-                    
                 }
-            }
                 Spacer()
-        }
+            }
             
             if viewModel.gameOver {
                 
                 ZStack {
                     Image(.gameOverBg)
                         .resizable()
-                        .scaledToFill()
                         .ignoresSafeArea()
+                        .scaledToFill()
                         .scaleEffect(x: viewModel.isDefenderWin ? 1 : -1, y: 1)
                     
                     HStack {
@@ -136,23 +139,23 @@ struct AgainstPlayersView: View {
                                 Image(.loseIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                                 Image(.tryAgainIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                             } else {
                                 Image(.winIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                                 Image(.bonusIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                             }
                         }
-                        Spacer()
+                        //Spacer()
                         VStack {
                             Spacer()
                             Button {
@@ -161,7 +164,7 @@ struct AgainstPlayersView: View {
                                 Image(.restartIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(height: 100)
+                                    .frame(height: SLDeviceInfo.shared.deviceType == .pad ? 200:100)
                             }
                             
                             Button {
@@ -170,29 +173,29 @@ struct AgainstPlayersView: View {
                                 Image(.menuIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(height: 100)
+                                    .frame(height: SLDeviceInfo.shared.deviceType == .pad ? 200:100)
                             }
                         }
-                        Spacer()
+                        //Spacer()
                         VStack {
                             if viewModel.isDefenderWin {
                                 Image(.loseIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                                 Image(.tryAgainIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                             } else {
                                 Image(.winIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                                 Image(.bonusIconSL)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 250)
+                                    .frame(width: SLDeviceInfo.shared.deviceType == .pad ? 400:250)
                             }
                         }
                         Spacer()
@@ -202,10 +205,12 @@ struct AgainstPlayersView: View {
             }
         }.background(
             ZStack {
-                Image(.menuViewBgSL)
-                    .resizable()
-                    .edgesIgnoringSafeArea(.all)
-                    .scaledToFill()
+                if let bgImage = shopVM.currentTeamItem {
+                    Image("\(bgImage.image)")
+                        .resizable()
+                        .edgesIgnoringSafeArea(.all)
+                        .scaledToFill()
+                }
             }
             
         )
@@ -223,7 +228,7 @@ struct AgainstPlayersView: View {
                 viewModel.selectedCell = (row, col)
             }
         }
-        }
+    }
 }
 
 #Preview {
