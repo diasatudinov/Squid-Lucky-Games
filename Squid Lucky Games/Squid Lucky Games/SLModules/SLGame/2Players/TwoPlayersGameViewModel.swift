@@ -1,11 +1,5 @@
-//
-//  TwoPlayersGameViewModel.swift
-//  Squid Lucky Games
-//
-//  Created by Dias Atudinov on 27.03.2025.
-//
-
 import SwiftUI
+import AVFoundation
 
 class TwoPlayersGameViewModel: ObservableObject {
     @Published var board: [[Piece]] = Array(
@@ -18,6 +12,9 @@ class TwoPlayersGameViewModel: ObservableObject {
     @Published var currentPlayer: Player = .attacker
     @Published var isDefenderWin = false
     
+    var audioPlayer: AVAudioPlayer?
+    
+    let settingsVM = SettingsViewModelSL()
     init() {
         setupBoard()
     }
@@ -29,6 +26,18 @@ class TwoPlayersGameViewModel: ObservableObject {
         selectedCell = nil
         currentPlayer = .attacker
         setupBoard()
+    }
+    
+    func playTapSound() {
+        if settingsVM.soundEnabled {
+            guard let url = Bundle.main.url(forResource: "clickSoundSL", withExtension: "mp3") else { return }
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.play()
+            } catch {
+                print("Ошибка воспроизведения звука: \(error)")
+            }
+        }
     }
     
     func isCorner(row: Int, col: Int) -> Bool {
@@ -97,8 +106,6 @@ class TwoPlayersGameViewModel: ObservableObject {
         }
     }
     
-    // ... [the rest of your game logic remains the same,
-    // but remember to work with Piece instead of PieceType]
     
     func isPieceBelongsToCurrentPlayer(_ piece: Piece) -> Bool {
         switch currentPlayer {
@@ -124,6 +131,8 @@ class TwoPlayersGameViewModel: ObservableObject {
         board[from.0][from.1] = Piece(type: .none)
         board[to.0][to.1] = movingPiece
 
+        playTapSound()
+        
         // If the king moved to a corner, handle victory.
         if movingPiece.type == .king && isCorner(row: to.0, col: to.1) {
             gameOver = true

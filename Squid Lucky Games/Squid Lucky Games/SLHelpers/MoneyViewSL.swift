@@ -1,10 +1,3 @@
-//
-//  MoneyViewSL.swift
-//  Squid Lucky Games
-//
-//  Created by Dias Atudinov on 25.03.2025.
-//
-
 import SwiftUI
 
 struct MoneyViewSL: View {

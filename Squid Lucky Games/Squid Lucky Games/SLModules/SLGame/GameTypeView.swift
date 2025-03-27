@@ -1,10 +1,3 @@
-//
-//  GameTypeView.swift
-//  Squid Lucky Games
-//
-//  Created by Dias Atudinov on 26.03.2025.
-//
-
 import SwiftUI
 
 struct GameTypeView: View {

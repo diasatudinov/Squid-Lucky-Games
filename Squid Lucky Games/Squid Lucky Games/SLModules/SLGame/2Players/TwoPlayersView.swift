@@ -1,10 +1,3 @@
-//
-//  TwoPlayersView.swift
-//  Squid Lucky Games
-//
-//  Created by Dias Atudinov on 27.03.2025.
-//
-
 import SwiftUI
 
 struct TwoPlayersView: View {

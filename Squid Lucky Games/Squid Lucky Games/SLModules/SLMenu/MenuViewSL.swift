@@ -1,10 +1,3 @@
-//
-//  MenuViewSL.swift
-//  Squid Lucky Games
-//
-//  Created by Dias Atudinov on 24.03.2025.
-//
-
 import SwiftUI
 
 struct MenuViewSL: View {
@@ -87,18 +80,18 @@ struct MenuViewSL: View {
                 }
                 
             )
-//            .onAppear {
-//                if settingsVM.musicEnabled {
-//                    MusicManagerIE.shared.playBackgroundMusic()
-//                }
-//            }
-//            .onChange(of: settingsVM.musicEnabled) { enabled in
-//                if enabled {
-//                    MusicManagerIE.shared.playBackgroundMusic()
-//                } else {
-//                    MusicManagerIE.shared.stopBackgroundMusic()
-//                }
-//            }
+            .onAppear {
+                if settingsVM.musicEnabled {
+                    MusicManagerSL.shared.playBackgroundMusic()
+                }
+            }
+            .onChange(of: settingsVM.musicEnabled) { enabled in
+                if enabled {
+                    MusicManagerSL.shared.playBackgroundMusic()
+                } else {
+                    MusicManagerSL.shared.stopBackgroundMusic()
+                }
+            }
             .fullScreenCover(isPresented: $showGame) {
                 GameTypeView(shopVM: shopVM)
             }
