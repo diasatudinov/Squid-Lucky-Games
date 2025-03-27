@@ -16,11 +16,16 @@ class AgainstPlayersGameViewModel: ObservableObject {
     @Published var selectedCell: (row: Int, col: Int)? = nil
     @Published var gameOver: Bool = false
     @Published var gameResult: String = ""
-    @Published var currentPlayer: Player = .attacker
+    @Published var currentPlayer: Player = .defender
     @Published var isDefenderWin = false
+    
+    @Published var timeRemaining: Int = 30
+    var turnDuration = 30
+    var timer: Timer? = nil
     
     init() {
         setupBoard()
+        startTurnTimer()
     }
     
     func resetGame() {
@@ -28,9 +33,33 @@ class AgainstPlayersGameViewModel: ObservableObject {
         isDefenderWin = false
         gameResult = ""
         selectedCell = nil
-        currentPlayer = .attacker
+        currentPlayer = .defender
         setupBoard()
+        startTurnTimer()
     }
+    
+    func startTurnTimer() {
+           // Останавливаем предыдущий таймер, если он есть
+           timer?.invalidate()
+           timeRemaining = turnDuration
+           timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+               guard let self = self else { return }
+               if self.timeRemaining > 0 {
+                   self.timeRemaining -= 1
+               } else {
+                   timer.invalidate()
+                   self.timer = nil
+                   // Если время закончилось, автоматически переключаем ход
+                   self.switchTurn()
+               }
+           }
+       }
+       
+       // Остановка таймера
+       func stopTurnTimer() {
+           timer?.invalidate()
+           timer = nil
+       }
     
     func isCorner(row: Int, col: Int) -> Bool {
         return (row == 0 && col == 0) ||
@@ -146,6 +175,14 @@ class AgainstPlayersGameViewModel: ObservableObject {
     
     func switchTurn() {
         currentPlayer = currentPlayer == .attacker ? .defender : .attacker
+        
+        if currentPlayer == .attacker {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.performAIMove()
+            }
+        }
+        
+        startTurnTimer()
     }
     
     func isPathClear(from: (Int, Int), to: (Int, Int)) -> Bool {
@@ -232,4 +269,42 @@ class AgainstPlayersGameViewModel: ObservableObject {
     func isValid(row: Int, col: Int) -> Bool {
         return row >= 0 && row < 11 && col >= 0 && col < 11
     }
+    
+    // MARK: AI Moves
+    func availableAIMoves() -> [((Int, Int), (Int, Int))] {
+            var moves: [((Int, Int), (Int, Int))] = []
+            // Перебираем все клетки
+            for row in 0..<11 {
+                for col in 0..<11 {
+                    let piece = board[row][col]
+                    if piece.type == .attacker {
+                        // Для каждой атакующей фигуры ищем возможные ходы по 4 направлениям
+                        let directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                        for direction in directions {
+                            var newRow = row + direction.0
+                            var newCol = col + direction.1
+                            while isValid(row: newRow, col: newCol) && board[newRow][newCol].type == .none {
+                                // Если клетка угловая – разрешаем ход только для короля, поэтому пропускаем
+                                if isCorner(row: newRow, col: newCol) { break }
+                                // Если путь свободен, добавляем ход
+                                if isPathClear(from: (row, col), to: (newRow, newCol)) {
+                                    moves.append(((row, col), (newRow, newCol)))
+                                }
+                                newRow += direction.0
+                                newCol += direction.1
+                            }
+                        }
+                    }
+                }
+            }
+            return moves
+        }
+        
+        func performAIMove() {
+            let moves = availableAIMoves()
+            guard moves.count > 0 else { return }
+            // Выбираем случайный ход
+            let move = moves.randomElement()!
+            movePiece(from: move.0, to: move.1)
+        }
 }

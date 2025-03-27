@@ -1,12 +1,13 @@
 //
-//  GameViewModel.swift
+//  TwoPlayersGameViewModel.swift
 //  Squid Lucky Games
 //
 //  Created by Dias Atudinov on 27.03.2025.
 //
 
+import SwiftUI
 
-class GameViewModel: ObservableObject {
+class TwoPlayersGameViewModel: ObservableObject {
     @Published var board: [[Piece]] = Array(
         repeating: Array(repeating: Piece(type: .none), count: 11),
         count: 11
@@ -15,6 +16,7 @@ class GameViewModel: ObservableObject {
     @Published var gameOver: Bool = false
     @Published var gameResult: String = ""
     @Published var currentPlayer: Player = .attacker
+    @Published var isDefenderWin = false
     
     init() {
         setupBoard()
@@ -22,6 +24,7 @@ class GameViewModel: ObservableObject {
     
     func resetGame() {
         gameOver = false
+        isDefenderWin = false
         gameResult = ""
         selectedCell = nil
         currentPlayer = .attacker
@@ -124,7 +127,9 @@ class GameViewModel: ObservableObject {
         // If the king moved to a corner, handle victory.
         if movingPiece.type == .king && isCorner(row: to.0, col: to.1) {
             gameOver = true
+            isDefenderWin = true
             gameResult = "Defenders win! The king has escaped."
+            SLUser.shared.updateUserBirds(for: 2000)
             return
         }
 
@@ -210,6 +215,7 @@ class GameViewModel: ObservableObject {
                     let required = isOnEdge(row: row, col: col) ? 3 : 4
                     if surroundCount >= required {
                         gameOver = true
+                        isDefenderWin = false
                         gameResult = "Attackers win! King captured."
                     }
                     return // Once the king is found and evaluated, exit.
